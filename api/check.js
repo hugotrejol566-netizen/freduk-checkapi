@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-  let valores = [];
+  let values = [];
   if (req.method === "POST") {
     try {
       const body = await req.body;
@@ -8,20 +8,20 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, msg: "Error al leer cuerpo JSON" });
     }
   } else if (req.method === "GET") {
-    const { value, valor } = req.query;
-    const input = value || valor;
-    if (!input) return res.status(400).json({ ok: false, msg: "Falta el parámetro 'value' o 'valor'" });
+    const { value, value } = req.query;
+    const input = value || value;
+    if (!input) return res.status(400).json({ ok: false, msg: "Falta el parámetro 'value' o 'value'" });
     valores = input.split(",");
   } else {
     return res.status(405).json({ ok: false, msg: "Método no permitido" });
   }
 
-  if (valores.length === 0)
-    return res.status(400).json({ ok: false, msg: "No se proporcionaron valores" });
+  if (values.length === 0)
+    return res.status(400).json({ ok: false, msg: "No se proporcionaron values" });
 
   valores = valores.slice(0, 20);
 
-  const resultados = valores.map((num) => {
+  const resultados = values.map((num) => {
     const limpio = num.replace(/\s+/g, "");
     const valido = /^[0-9]{13,19}$/.test(limpio);
     const luhn = valido && validarLuhn(limpio);
