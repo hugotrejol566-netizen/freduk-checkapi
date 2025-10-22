@@ -9,7 +9,6 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, msg: "Error al leer cuerpo JSON" });
     }
   } else if (req.method === "GET") {
-    // aquí aceptamos tanto "value" como "valor" para compatibilidad
     const { value, valor } = req.query;
     const input = value || valor;
     if (!input) return res.status(400).json({ ok: false, msg: "Falta el parámetro 'value' o 'valor'" });
@@ -21,7 +20,6 @@ export default async function handler(req, res) {
   if (valores.length === 0)
     return res.status(400).json({ ok: false, msg: "No se proporcionaron valores" });
 
-  // Limitar a máximo 20 valores
   valores = valores.slice(0, 20);
 
   const resultados = valores.map((num) => {
@@ -44,7 +42,6 @@ export default async function handler(req, res) {
   });
 }
 
-// Algoritmo Luhn
 function validarLuhn(num) {
   let suma = 0;
   let alternar = false;
