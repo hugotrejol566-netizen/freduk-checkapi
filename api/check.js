@@ -9,9 +9,11 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, msg: "Error al leer cuerpo JSON" });
     }
   } else if (req.method === "GET") {
-    const { value } = req.query;
-    if (!value) return res.status(400).json({ ok: false, msg: "Falta el parámetro 'value'" });
-    valores = value.split(",");
+    // aquí aceptamos tanto "value" como "valor" para compatibilidad
+    const { value, valor } = req.query;
+    const input = value || valor;
+    if (!input) return res.status(400).json({ ok: false, msg: "Falta el parámetro 'value' o 'valor'" });
+    valores = input.split(",");
   } else {
     return res.status(405).json({ ok: false, msg: "Método no permitido" });
   }
