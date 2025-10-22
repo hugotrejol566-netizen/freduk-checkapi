@@ -1,6 +1,5 @@
 export default async function handler(req, res) {
   let valores = [];
-
   if (req.method === "POST") {
     try {
       const body = await req.body;
