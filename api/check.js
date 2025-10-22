@@ -1,36 +1,43 @@
-export default async function handler(req, res) {
-  // Permitir GET y POST (POST recomendado)
-  const MAX_ITEMS = 20;
+export default function handler(req, res) {
+  const { value } = req.query;
 
-  // Obtener lista de valores: POST JSON { values: [...] } o GET ?values=a,b,c
-  let values = [];
-  if (req.method === "POST") {
-    try {
-      const body = await new Promise((resolve, reject) => {
-        let data = "";
-        req.on("data", chunk => (data += chunk));
-        req.on("end", () => {
-          try { resolve(JSON.parse(data || "{}")); }
-          catch(e){ reject(e); }
-        });
-        req.on("error", reject);
-      });
-      if (body && Array.isArray(body.values)) values = body.values;
-    } catch (err) {
-      // si falla parseo, continuar para ver si hay GET
-      values = [];
+  // Si no hay parámetro 'value'
+  if (!value) {
+    return res.status(400).json({ ok: false, msg: "Falta el parámetro 'value'" });
+  }
+
+  // Si 'value' es una lista separada por comas (hasta 20 elementos)
+  const values = value.split(",").slice(0, 20); // máximo 20
+
+  // Función Luhn
+  function luhnCheck(num) {
+    const arr = (num + '')
+      .split('')
+      .reverse()
+      .map(x => parseInt(x));
+    const lastDigit = arr.shift();
+    let sum = arr.reduce(
+      (acc, val, i) => acc + (i % 2 === 0 ? ((val *= 2) > 9 ? val - 9 : val) : val),
+      0
+    );
+    sum += lastDigit;
+    return sum % 10 === 0;
+  }
+
+  // Procesar cada valor
+  const resultados = values.map(input => {
+    const limpio = input.trim();
+    if (!/^\d{12,19}$/.test(limpio)) {
+      return { input: limpio, valido: false, resultado: "❌ Formato no válido" };
     }
-  }
-  if (!values || values.length === 0) {
-    // intentar con GET ?values=a,b,c
-    const q = (req.query && (req.query.values || req.query.value)) || "";
-    if (typeof q === "string" && q.trim() !== "") {
-      values = q.split(",").map(s => s.trim()).filter(Boolean);
-    }
-  }
 
-  if (!Array.isArray(values) || values.length === 0) {
-    return res.status(400).json({ ok: false, msg: "Envía un array 'values' (POST JSON) o ?values=a,b,c (GET)." });
-  }
+    const valido = luhnCheck(limpio);
+    return {
+      input: limpio,
+      valido,
+      resultado: valido ? "✅ Tarjeta válida según Luhn" : "❌ Tarjeta inválida",
+    };
+  });
 
-  if (values.length > MAX_ITEMS) {
+  res.status(200).json({ ok: true, total: resultados.length, resultados });
+}
